@@ -1,0 +1,12 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+  "tailwindCSS.experimental.classRegex": [
+    "cn\\(([^)]*)\\)", // for ShadCN's cn() utility
+    "clsx\\(([^)]*)\\)" // if you use clsx
+  ]
+}
