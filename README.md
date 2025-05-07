@@ -5,12 +5,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
 bun dev
 ```
 
@@ -50,3 +44,13 @@ bun run index.ts
 ```
 
 This project was created using `bun init` in bun v1.2.2. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+
+# TODO
+
+- [x] Complete the transaction form
+  - [x] Save data to db
+  - [x] Show data in list on save
+- [ ] Add Category Customization page
+- [ ] Budget page (set budget for the month)
+- [ ] Add docker file?
+- [ ] Insights page (what can we see based on purchase)

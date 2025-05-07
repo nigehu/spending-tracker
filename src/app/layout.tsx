@@ -30,8 +30,10 @@ export default function RootLayout({
         <SidebarProvider>
           <AppSidebar />
           <main className="min-h-screen w-full">
-            <SidebarTrigger />
-            {children}
+            <div className="border-b border-gray-300 bg-white p-1">
+              <SidebarTrigger className="cursor-pointer" />
+            </div>
+            <div className="h-[calc(100vh_-_37px)] bg-gray-100">{children}</div>
           </main>
         </SidebarProvider>
       </body>

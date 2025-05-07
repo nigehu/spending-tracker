@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/src/components/ui/select';
+import { addNewTransaction } from '../../app/actions';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -36,15 +37,17 @@ const formSchema = z.object({
   date: z.date({
     required_error: 'Please select a date',
   }),
-  amount: z.number({
+  amount: z.coerce.number({
     required_error: 'Amount is required',
     invalid_type_error: 'Amount must be a number',
   }),
   category: z.string(),
 });
 
+export type FormSchema = z.infer<typeof formSchema>;
+
 export function TransactionForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -52,10 +55,9 @@ export function TransactionForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+  function onSubmit(values: FormSchema) {
     console.log(values);
+    addNewTransaction(values);
   }
 
   return (
@@ -144,7 +146,9 @@ export function TransactionForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button className="cursor-pointer" type="submit">
+          Submit
+        </Button>
       </form>
     </Form>
   );

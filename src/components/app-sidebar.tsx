@@ -10,12 +10,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/src/components/ui/sidebar';
-import { Home } from 'lucide-react';
+import { Home, CircleDollarSign, SquareLibrary } from 'lucide-react';
+import Link from 'next/link';
 
 export function AppSidebar() {
   return (
     <Sidebar>
-      <SidebarHeader>TEST</SidebarHeader>
+      <SidebarHeader>
+        <div>
+          <div className="flex items-center gap-2">
+            <span>Spending Tracker</span>
+            <CircleDollarSign />
+          </div>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
@@ -23,10 +31,18 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <a href="#">
+                  <Link href="/">
                     <Home />
                     <span>Home</span>
-                  </a>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/categories">
+                    <SquareLibrary />
+                    <span>Categories</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
