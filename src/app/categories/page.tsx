@@ -1,31 +1,20 @@
-import React from 'react';
-
-type Category = {
-  id: number;
-  name: string;
-};
-
-const categories: Category[] = [
-  { id: 1, name: 'Food' },
-  { id: 2, name: 'Transportation' },
-  { id: 3, name: 'Entertainment' },
-  { id: 4, name: 'Utilities' },
-];
+import prisma from '@/lib/prisma';
+import { CategoryForm } from '@/src/components/category/category-form';
+import CategoryList from '@/src/components/category/cateogry-list';
 
 export default async function Categories() {
+  const categories = await prisma.category.findMany();
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">Categories</h1>
-      <ul className="space-y-2">
-        {categories.map((category) => (
-          <li
-            key={category.id}
-            className="p-4 bg-white shadow rounded-lg text-gray-700 hover:bg-gray-50 transition"
-          >
-            {category.name}
-          </li>
-        ))}
-      </ul>
+    <div className="flex flex-col md:flex-row">
+      <div className="h-[calc(100vh_-_37px)] w-full md:w-1/2 p-8 bg-white shadow-md">
+        <h1 className="text-2xl font-bold mb-4 text-gray-800">Add New Category</h1>
+        <CategoryForm />
+      </div>
+
+      <div className="p-6 w-full">
+        <h1 className="text-2xl font-bold mb-4 text-gray-800">Categories</h1>
+        <CategoryList categories={categories} />
+      </div>
     </div>
   );
 }

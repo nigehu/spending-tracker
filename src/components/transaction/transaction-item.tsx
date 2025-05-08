@@ -1,14 +1,17 @@
 'use client';
 
-import { format } from 'date-fns';
-import { ShoppingCart, X } from 'lucide-react';
+import { Button } from '@/src/components/ui/button';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
+import { X } from 'lucide-react';
 import React from 'react';
+import DateIcon from '../date-icon';
 
 interface TransactionItemProps {
   id: number;
   name: string;
   amount: number;
   date: Date;
+  category: string;
   handleDelete: (id: number) => void;
 }
 
@@ -17,6 +20,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   name,
   amount,
   date,
+  category,
   handleDelete,
 }) => {
   const handleDeleteClick = () => {
@@ -24,36 +28,39 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   };
 
   return (
-    <li
-      key={id}
-      className="bg-white p-4 rounded shadow flex items-center justify-between hover:bg-gray-100 transition-colors"
-    >
-      <div className="flex flex-col items-center justify-center">
-        <ShoppingCart className="text-gray-500" size={24} />
-        <p className="text-xs text-blue-500">Shopping</p>
-      </div>
-      <div className="flex-1 w-full p-4 rounded-md flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800">{name}</h2>
-          <p className="text-sm text-gray-500">
-            {amount.toLocaleString('en-US', {
-              style: 'currency',
-              currency: 'CAD',
-            })}
+    <li>
+      <Card className="flex flex-row justify-between py-0 gap-0">
+        <div className="w-8 bg-gradient-to-r from-red-500 to-white-500 rounded-l-xl">
+          <p className="text-sm font-medium w-25 h-25 text-center overflow-hidden transform rotate-[270deg]">
+            {category}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-md font-medium text-gray-700">{format(date, 'dd-MMM-yyyy')}</p>
+        <div className="my-6 mx-6">
+          <DateIcon date={new Date(date)} />
         </div>
-      </div>
-
-      <button
-        onClick={handleDeleteClick}
-        className="cursor-pointer hover:text-red-700 text-lg font-bold"
-        aria-label="Delete transaction"
-      >
-        <X />
-      </button>
+        <div className="flex-1 flex flex-col justify-center my-6">
+          <CardHeader>
+            <CardTitle>{name}</CardTitle>
+            <CardDescription>
+              {amount.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'CAD',
+              })}
+            </CardDescription>
+          </CardHeader>
+        </div>
+        <div className="pr-6 flex flex-col justify-center m-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="cursor-pointer hover:text-red-700"
+            aria-label="Delete category"
+            onClick={handleDeleteClick}
+          >
+            <X />
+          </Button>
+        </div>
+      </Card>
     </li>
   );
 };

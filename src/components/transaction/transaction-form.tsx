@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/src/components/ui/select';
 import { addNewTransaction } from '../../app/actions';
+import { Category } from '@prisma/client';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -41,12 +42,16 @@ const formSchema = z.object({
     required_error: 'Amount is required',
     invalid_type_error: 'Amount must be a number',
   }),
-  category: z.string(),
+  category: z.coerce.number(),
 });
 
 export type FormSchema = z.infer<typeof formSchema>;
 
-export function TransactionForm() {
+interface TransactionFormProps {
+  categories: Category[];
+}
+
+export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) => {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,7 +61,6 @@ export function TransactionForm() {
   });
 
   function onSubmit(values: FormSchema) {
-    console.log(values);
     addNewTransaction(values);
   }
 
@@ -136,10 +140,11 @@ export function TransactionForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="grocery">Grocery</SelectItem>
-                  <SelectItem value="out">Out</SelectItem>
-                  <SelectItem value="drinks">Drinks</SelectItem>
-                  <SelectItem value="rent">Rent</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.categoryId} value={String(category.categoryId)}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -152,4 +157,4 @@ export function TransactionForm() {
       </form>
     </Form>
   );
-}
+};

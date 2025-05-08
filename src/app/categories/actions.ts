@@ -1,27 +1,26 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { FormSchema } from '@/src/components/transaction/transaction-form';
+import { FormSchema } from '@/src/components/category/category-form';
 import { revalidatePath } from 'next/cache';
 
-export async function addNewTransaction({ name, amount, date, category }: FormSchema) {
+export async function addNewCategory({ name, transactionType, description }: FormSchema) {
   try {
-    await prisma.transaction.create({
+    await prisma.category.create({
       data: {
         name,
-        amount,
-        date,
-        categoryId: category,
+        type: transactionType,
+        description: description ?? '',
       },
     });
   } catch (error) {
     console.error('Failed to update:', error);
     throw new Error('Database update failed');
   }
-  revalidatePath('/');
+  revalidatePath('/categories');
 }
 
-export async function deleteTransaction(id: number) {
+export async function deleteCategory(id: number) {
   try {
     await prisma.transaction.delete({
       where: {
@@ -32,5 +31,5 @@ export async function deleteTransaction(id: number) {
     console.error('Failed to delete:', error);
     throw new Error('Database delete failed');
   }
-  revalidatePath('/');
+  revalidatePath('/categories');
 }

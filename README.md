@@ -45,12 +45,32 @@ bun run index.ts
 
 This project was created using `bun init` in bun v1.2.2. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
 
+# Adding new UI components
+
+This project uses [ShadCN](https://ui.shadcn.com/) for the component library.
+
+Use the following command to install new components:
+
+```
+bun x shadcn@latest add <component>
+```
+
 # TODO
 
 - [x] Complete the transaction form
   - [x] Save data to db
   - [x] Show data in list on save
-- [ ] Add Category Customization page
+- [x] Add Category Customization page
+- [ ] Add a way to edit:
+  - [ ] Transactions
+  - [ ] Categories
+- [ ] Add tests for:
+  - [ ] Transaction submission
+  - [ ] Transaction editing
+  - [ ] Transaction deleting
+  - [ ] Category submission
+  - [ ] Category editing
+  - [ ] Category submission
+- [ ] Add docker file
 - [ ] Budget page (set budget for the month)
-- [ ] Add docker file?
 - [ ] Insights page (what can we see based on purchase)

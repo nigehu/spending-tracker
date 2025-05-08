@@ -2,21 +2,22 @@
 
 import React from 'react';
 import TransactionItem from './transaction-item';
-import type { Transaction } from '@prisma/client';
+import type { Category, Transaction } from '@prisma/client';
 import { deleteTransaction } from '@/src/app/actions';
 
 interface TransactionListProps {
   transactions: Transaction[];
+  categories: Category[];
 }
 
-const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
+const TransactionList: React.FC<TransactionListProps> = ({ transactions, categories }) => {
   const handleDelete = (id: number) => {
     deleteTransaction(id);
   };
 
   return (
     <div className="w-full md:w-1/2 p-8 bg-gray-100">
-      <h2 className="text-2xl font-semibold mb-6">Entries</h2>
+      <h2 className="text-2xl font-semibold mb-6">Transactions</h2>
       {transactions.length === 0 ? (
         <p className="text-gray-500">No entries yet.</p>
       ) : (
@@ -28,6 +29,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
               amount={t.amount}
               name={t.name}
               date={t.date}
+              category={categories.find((c) => c.categoryId === t.categoryId)?.name || ''}
               handleDelete={handleDelete}
             />
           ))}
