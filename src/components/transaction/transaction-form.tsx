@@ -2,14 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
-import { cn } from '@/src/lib/utils';
 import { Calendar } from '@/src/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/src/components/ui/popover';
+import { cn } from '@/src/lib/utils';
 
 import { Button } from '@/src/components/ui/button';
 import {
@@ -28,24 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/src/components/ui/select';
-import { addNewTransaction } from '../../app/actions';
+import { formSchema, FormSchema } from '@/src/lib/transaction.utils';
 import { Category } from '@prisma/client';
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: 'Name must be at least 2 characters.',
-  }),
-  date: z.date({
-    required_error: 'Please select a date',
-  }),
-  amount: z.coerce.number({
-    required_error: 'Amount is required',
-    invalid_type_error: 'Amount must be a number',
-  }),
-  category: z.coerce.number(),
-});
-
-export type FormSchema = z.infer<typeof formSchema>;
+import { addNewTransaction } from '../../app/actions';
 
 interface TransactionFormProps {
   categories: Category[];
@@ -133,9 +117,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select a purchase category" />
                   </SelectTrigger>
                 </FormControl>

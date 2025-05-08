@@ -12,6 +12,7 @@ interface TransactionItemProps {
   amount: number;
   date: Date;
   category: string;
+  handleCardClick: (id: number) => void;
   handleDelete: (id: number) => void;
 }
 
@@ -21,15 +22,26 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   amount,
   date,
   category,
+  handleCardClick,
   handleDelete,
 }) => {
   const handleDeleteClick = () => {
     handleDelete(id);
   };
 
+  const handleTransactionCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      // If the target is a button, do not trigger the card click event
+      handleCardClick(id);
+    }
+  };
+
   return (
     <li>
-      <Card className="flex flex-row justify-between py-0 gap-0">
+      <Card
+        className="flex flex-row justify-between py-0 gap-0 hover:bg-gray-50 transition duration-200 ease-in-out cursor-pointer"
+        onClick={handleTransactionCardClick}
+      >
         <div className="w-8 bg-gradient-to-r from-red-500 to-white-500 rounded-l-xl">
           <p className="text-sm font-medium w-25 h-25 text-center overflow-hidden transform rotate-[270deg]">
             {category}
@@ -54,7 +66,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
             variant="ghost"
             size="icon"
             className="cursor-pointer hover:text-red-700"
-            aria-label="Delete category"
+            aria-label="Delete transaction"
             onClick={handleDeleteClick}
           >
             <X />
