@@ -55,15 +55,19 @@ Use the following command to install new components:
 bun x shadcn@latest add <component>
 ```
 
+# Testing
+
+See https://github.com/Quramy/prisma-fabbrica?tab=readme-ov-file#usage-of-factories
+
 # TODO
 
 - [x] Complete the transaction form
   - [x] Save data to db
   - [x] Show data in list on save
 - [x] Add Category Customization page
-- [ ] Add a way to edit:
-  - [ ] Transactions
-  - [ ] Categories
+- [x] Add a way to edit:
+  - [x] Transactions
+  - [x] Categories
 - [ ] Add tests for:
   - [ ] Transaction submission
   - [ ] Transaction editing
@@ -71,6 +75,10 @@ bun x shadcn@latest add <component>
   - [ ] Category submission
   - [ ] Category editing
   - [ ] Category submission
+- [ ] Improve UI
+  - [ ] Fix the transaction item layout
+  - [ ] Add a more aesthetic way to add a transaction
+  - [ ] Add a more aesthetic way to add a category
 - [ ] Add docker file
 - [ ] Budget page (set budget for the month)
 - [ ] Insights page (what can we see based on purchase)

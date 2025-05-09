@@ -9,13 +9,10 @@ export default async function Home() {
   const categories = await prisma.category.findMany();
   return (
     <div className="flex flex-col md:flex-row">
-      {/* Left: Form */}
+      <TransactionList transactions={transactions} categories={categories} />
       <div className="h-[calc(100vh_-_37px)] w-full md:w-1/2 p-8 bg-white shadow-md">
         <TransactionForm categories={categories} />
       </div>
-
-      {/* Right: List */}
-      <TransactionList transactions={transactions} categories={categories} />
     </div>
   );
 }

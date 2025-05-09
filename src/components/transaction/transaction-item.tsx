@@ -42,7 +42,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
         className="flex flex-row justify-between py-0 gap-0 hover:bg-gray-50 transition duration-200 ease-in-out cursor-pointer"
         onClick={handleTransactionCardClick}
       >
-        <div className="w-8 bg-gradient-to-r from-red-500 to-white-500 rounded-l-xl">
+        <div className="w-8 rounded-l-xl">
           <p className="text-sm font-medium w-25 h-25 text-center overflow-hidden transform rotate-[270deg]">
             {category}
           </p>
@@ -50,7 +50,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
         <div className="my-6 mx-6">
           <DateIcon date={new Date(date)} />
         </div>
-        <div className="flex-1 flex flex-col justify-center my-6">
+        <div className="flex-1 flex flex-col justify-center my-6 min-w-25">
           <CardHeader>
             <CardTitle>{name}</CardTitle>
             <CardDescription>
@@ -61,7 +61,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
             </CardDescription>
           </CardHeader>
         </div>
-        <div className="pr-6 flex flex-col justify-center m-6">
+        <div className="pr-6 flex flex-col justify-center m-6 min-w-15">
           <Button
             variant="ghost"
             size="icon"

@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import { Button } from '@/src/components/ui/button';
 import {
@@ -22,16 +21,7 @@ import {
   SelectValue,
 } from '@/src/components/ui/select';
 import { addNewCategory } from '@/src/app/categories/actions';
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: 'Name must be at least 2 characters.',
-  }),
-  description: z.string().optional(),
-  transactionType: z.enum(['DEBIT', 'CREDIT']),
-});
-
-export type FormSchema = z.infer<typeof formSchema>;
+import { formSchema, FormSchema } from '@/src/lib/category.utils';
 
 export function CategoryForm() {
   const form = useForm<FormSchema>({

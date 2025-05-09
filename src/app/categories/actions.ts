@@ -1,12 +1,34 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { FormSchema } from '@/src/components/category/category-form';
+import { FormSchema } from '@/src/lib/category.utils';
 import { revalidatePath } from 'next/cache';
 
 export async function addNewCategory({ name, transactionType, description }: FormSchema) {
   try {
     await prisma.category.create({
+      data: {
+        name,
+        type: transactionType,
+        description: description ?? '',
+      },
+    });
+  } catch (error) {
+    console.error('Failed to update:', error);
+    throw new Error('Database update failed');
+  }
+  revalidatePath('/categories');
+}
+
+export async function updateCategory(
+  id: number,
+  { name, transactionType, description }: FormSchema,
+) {
+  try {
+    await prisma.category.update({
+      where: {
+        categoryId: id,
+      },
       data: {
         name,
         type: transactionType,
