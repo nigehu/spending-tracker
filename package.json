@@ -47,8 +47,11 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
+    "jest-mock-extended": "~3.0.7",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5"
+    "ts-jest": "^29.3.2",
+    "typescript": "^5",
+    "@types/bun": "latest"
   }
 }

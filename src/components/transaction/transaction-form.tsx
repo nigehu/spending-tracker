@@ -29,7 +29,8 @@ import {
 } from '@/src/components/ui/select';
 import { formSchema, FormSchema } from '@/src/lib/transaction.utils';
 import { Category } from '@prisma/client';
-import { addNewTransaction } from '../../app/actions';
+import { createTransaction } from '../../app/actions';
+import { context } from '@/lib/context';
 
 interface TransactionFormProps {
   categories: Category[];
@@ -45,7 +46,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) 
   });
 
   function onSubmit(values: FormSchema) {
-    addNewTransaction(values);
+    createTransaction(values, context);
   }
 
   return (

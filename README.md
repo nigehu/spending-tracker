@@ -59,6 +59,12 @@ bun x shadcn@latest add <component>
 
 See https://github.com/Quramy/prisma-fabbrica?tab=readme-ov-file#usage-of-factories
 
+See https://bun.sh/docs/test/mocks#hoisting-preloading
+
+Prisma example with jest (doesn't work :( ) https://www.prisma.io/docs/orm/prisma-client/testing/unit-testing
+
+Example with vitest? https://www.prisma.io/blog/testing-series-1-8eRB5p0Y8o
+
 # TODO
 
 - [x] Complete the transaction form
