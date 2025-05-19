@@ -2,7 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, setup your db by creating a .env file based off of the .env.sample.
+
+Next, run the migrations:
+
+```bash
+bun prisma migrate dev
+```
+
+Next, run the development server:
 
 ```bash
 bun dev
