@@ -51,7 +51,7 @@ test('should throw an error if name is not a string', async () => {
   );
 });
 
-test('should throw an error if name is not a string', async () => {
+test('should throw an error if amount is not a number', async () => {
   const badTransaction = {
     name: 'Test Transaction',
     amount: '100',
@@ -63,7 +63,7 @@ test('should throw an error if name is not a string', async () => {
   );
 });
 
-test('should throw an error if name is not a string', async () => {
+test('should throw an error if date is not a date', async () => {
   const badTransaction = {
     name: 'Test Transaction',
     amount: 100,
@@ -75,7 +75,7 @@ test('should throw an error if name is not a string', async () => {
   );
 });
 
-test('should throw an error if name is not a string', async () => {
+test('should throw an error if category is not a number', async () => {
   const badTransaction = {
     name: 'Test Transaction',
     amount: 100,
@@ -87,7 +87,7 @@ test('should throw an error if name is not a string', async () => {
   );
 });
 
-test('should throw an error if name is not a string', async () => {
+test('should throw an error if category is not found in the db', async () => {
   const badTransaction = {
     name: 'Test Transaction',
     amount: 100,

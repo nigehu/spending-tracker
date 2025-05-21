@@ -82,8 +82,8 @@ Example with vitest? https://www.prisma.io/blog/testing-series-1-8eRB5p0Y8o
 - [x] Add a way to edit:
   - [x] Transactions
   - [x] Categories
-- [ ] Add tests for:
-  - [ ] Transaction submission
+- [x] Add tests for:
+  - [x] Transaction submission
   - [ ] Transaction editing
   - [ ] Transaction deleting
   - [ ] Category submission
