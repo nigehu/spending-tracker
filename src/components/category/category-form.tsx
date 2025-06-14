@@ -29,11 +29,13 @@ export function CategoryForm() {
     defaultValues: {
       name: '',
       description: '',
+      transactionType: 'DEBIT',
     },
   });
 
   function onSubmit(values: FormSchema) {
     addNewCategory(values);
+    form.reset();
   }
 
   return (

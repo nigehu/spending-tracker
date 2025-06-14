@@ -44,9 +44,10 @@ export async function updateCategory(
 
 export async function deleteCategory(id: number) {
   try {
-    await prisma.transaction.delete({
+    console.log(`Deleting category ${id}`);
+    await prisma.category.delete({
       where: {
-        transactionId: id,
+        categoryId: id,
       },
     });
   } catch (error) {

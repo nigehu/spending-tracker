@@ -16,6 +16,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   onEdit,
 }) => {
   const handleDelete = () => {
+    console.log('delete category', categoryId);
     deleteCategory(categoryId);
   };
   const handleEdit = () => {
@@ -44,7 +45,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
             variant="outline"
             size="sm"
             className="cursor-pointer hover:text-red-700"
-            onAbort={handleDelete}
+            onClick={handleDelete}
           >
             Delete
           </Button>
