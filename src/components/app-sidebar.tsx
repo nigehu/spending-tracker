@@ -47,9 +47,9 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/budgets">
+                  <Link href="/transactions">
                     <SquareLibrary />
-                    <span>Budgets</span>
+                    <span>Transactions</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useState, useEffect, useRef } from 'react';
 
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
@@ -36,6 +37,12 @@ interface TransactionFormProps {
 }
 
 export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) => {
+  const [amount, setAmount] = useState('');
+  const [displayAmount, setDisplayAmount] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,8 +51,80 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) 
     },
   });
 
+  // Currency formatting function
+  function formatCurrency(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
+  // Parse currency string to number
+  function parseCurrency(value: string): number {
+    // Remove currency symbols, commas, and spaces
+    const cleanValue = value.replace(/[$,]/g, '');
+    return parseFloat(cleanValue) || 0;
+  }
+
+  // Handle amount input change
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAmount = e.target.value;
+    setAmount(newAmount);
+
+    // Update display amount for formatting
+    const numericValue = parseCurrency(newAmount);
+    if (!isNaN(numericValue)) {
+      setDisplayAmount(formatCurrency(numericValue));
+    }
+
+    // Update form value
+    form.setValue('amount', numericValue);
+  };
+
+  // Handle focus - show raw value
+  const handleFocus = () => {
+    setIsFocused(true);
+    setDisplayAmount(amount);
+  };
+
+  // Handle blur - format as currency
+  const handleBlur = () => {
+    setIsFocused(false);
+    const numericValue = parseCurrency(amount);
+    if (!isNaN(numericValue)) {
+      setDisplayAmount(formatCurrency(numericValue));
+      setAmount(numericValue.toString());
+      form.setValue('amount', numericValue);
+    }
+  };
+
+  // Handle submit button key down
+  const handleSubmitKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      nameInputRef.current?.focus();
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   function onSubmit(values: FormSchema) {
     createTransaction(values);
+
+    // Reset form and clear custom state
+    form.reset();
+    setAmount('');
+    setDisplayAmount('');
+    setIsFocused(false);
   }
 
   return (
@@ -58,7 +137,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) 
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="Name of the purchase" {...field} />
+                <Input placeholder="Name of the purchase" {...field} ref={nameInputRef} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,11 +180,19 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) 
         <FormField
           control={form.control}
           name="amount"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input placeholder="Amount" {...field} />
+                <Input
+                  type="text"
+                  placeholder="$0.00"
+                  value={isFocused ? amount : displayAmount}
+                  onChange={handleAmountChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  className="font-mono"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -126,7 +213,18 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) 
                 <SelectContent>
                   {categories.map((category) => (
                     <SelectItem key={category.categoryId} value={String(category.categoryId)}>
-                      {category.name}
+                      <div className="flex items-center gap-2">
+                        <span>{category.name}</span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            category.type === 'CREDIT'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {category.type}
+                        </span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -135,7 +233,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ categories }) 
             </FormItem>
           )}
         />
-        <Button className="cursor-pointer" type="submit">
+        <Button className="cursor-pointer" type="submit" onKeyDown={handleSubmitKeyDown}>
           Submit
         </Button>
       </form>

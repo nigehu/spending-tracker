@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import '../styles/globals.css';
 import { SidebarProvider, SidebarTrigger } from '@/src/components/ui/sidebar';
 import { AppSidebar } from '@/src/components/app-sidebar';
+import { Toaster } from '@/src/components/ui/sonner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,9 +34,10 @@ export default function RootLayout({
             <div className="border-b border-gray-300 bg-white p-1">
               <SidebarTrigger className="cursor-pointer" />
             </div>
-            <div className="h-[calc(100vh_-_37px)] bg-gray-100">{children}</div>
+            <div className="h-[calc(100vh_-_37px)] bg-gray-100 overflow-y-auto">{children}</div>
           </main>
         </SidebarProvider>
+        <Toaster />
       </body>
     </html>
   );

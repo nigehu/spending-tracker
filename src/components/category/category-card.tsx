@@ -23,20 +23,21 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
     onEdit(categoryId);
   };
 
+  const typeColor = type === 'CREDIT' ? 'text-green-600' : 'text-red-600';
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {name} ({type})
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-1">
+        <CardTitle className="text-lg leading-tight">{name}</CardTitle>
+        <CardDescription className="text-sm text-gray-600 mt-1">{description}</CardDescription>
+        <div className={`text-xs font-medium mt-2 ${typeColor}`}>{type}</div>
       </CardHeader>
-      <CardFooter>
-        <div className="flex flex-row gap-2">
+      <CardFooter className="pt-4">
+        <div className="flex flex-row gap-2 w-full">
           <Button
             variant="outline"
             size="sm"
-            className="cursor-pointer hover:text-blue-700"
+            className="flex-1 cursor-pointer hover:text-blue-700"
             onClick={handleEdit}
           >
             Edit
@@ -44,7 +45,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="cursor-pointer hover:text-red-700"
+            className="flex-1 cursor-pointer hover:text-red-700"
             onClick={handleDelete}
           >
             Delete

@@ -50,7 +50,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, categor
                   amount={t.amount}
                   name={t.name}
                   date={t.date}
-                  category={categories.find((c) => c.categoryId === t.categoryId)?.name || ''}
+                  category={categories.find((c) => c.categoryId === t.categoryId)}
                   handleCardClick={handleCardClick}
                   handleDelete={handleDelete}
                 />

@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/src/components/ui/select';
+import { Textarea } from '../ui/textarea';
 
 interface CategoryEditFormProps {
   category: Category;
@@ -49,23 +50,46 @@ const CategoryEditForm: React.FC<CategoryEditFormProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Name of the category" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <CardContent className="flex-1 space-y-4 pt-6">
+            <div className="flex gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Name of the category" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="transactionType"
+                render={({ field }) => (
+                  <FormItem className="w-32">
+                    <FormLabel>Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="CREDIT">Credit</SelectItem>
+                        <SelectItem value="DEBIT">Debit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="description"
@@ -73,40 +97,19 @@ const CategoryEditForm: React.FC<CategoryEditFormProps> = ({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Purpose of the category" {...field} />
+                    <Textarea placeholder="Purpose of the category" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="transactionType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a transaction type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="CREDIT">Credit</SelectItem>
-                      <SelectItem value="DEBIT">Debit</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </CardContent>
-          <CardFooter>
-            <div className="flex flex-row gap-2">
+          <CardFooter className="pt-4">
+            <div className="flex flex-row gap-2 w-full">
               <Button
                 variant="outline"
                 size="sm"
-                className="cursor-pointer hover:text-blue-700"
+                className="flex-1 cursor-pointer hover:text-gray-700"
                 onClick={handleClose}
               >
                 Cancel
@@ -114,7 +117,7 @@ const CategoryEditForm: React.FC<CategoryEditFormProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="cursor-pointer hover:text-blue-700"
+                className="flex-1 cursor-pointer hover:text-blue-700"
                 type="submit"
               >
                 Save

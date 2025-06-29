@@ -1,17 +1,18 @@
 'use client';
 
 import { Button } from '@/src/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
+import { Card } from '@/src/components/ui/card';
 import { X } from 'lucide-react';
 import React from 'react';
 import DateIcon from '../date-icon';
+import { Category } from '@prisma/client';
 
 interface TransactionItemProps {
   id: number;
   name: string;
   amount: number;
   date: Date;
-  category: string;
+  category?: Category;
   handleCardClick: (id: number) => void;
   handleDelete: (id: number) => void;
 }
@@ -25,52 +26,69 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   handleCardClick,
   handleDelete,
 }) => {
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     handleDelete(id);
   };
 
-  const handleTransactionCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!(e.target instanceof HTMLButtonElement)) {
-      // If the target is a button, do not trigger the card click event
-      handleCardClick(id);
-    }
+  const handleTransactionCardClick = () => {
+    handleCardClick(id);
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
   };
 
   return (
-    <li>
+    <li className="mb-3">
       <Card
-        className="flex flex-row justify-between py-0 gap-0 hover:bg-gray-50 transition duration-200 ease-in-out cursor-pointer"
+        className="p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer border-gray-200"
         onClick={handleTransactionCardClick}
       >
-        <div className="w-8 rounded-l-xl">
-          <p className="text-sm font-medium w-25 h-25 text-center overflow-hidden transform rotate-[270deg]">
-            {category}
-          </p>
-        </div>
-        <div className="my-6 mx-6">
-          <DateIcon date={new Date(date)} />
-        </div>
-        <div className="flex-1 flex flex-col justify-center my-6 min-w-25">
-          <CardHeader>
-            <CardTitle>{name}</CardTitle>
-            <CardDescription>
-              {amount.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'CAD',
-              })}
-            </CardDescription>
-          </CardHeader>
-        </div>
-        <div className="pr-6 flex flex-col justify-center m-6 min-w-15">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="cursor-pointer hover:text-red-700"
-            aria-label="Delete transaction"
-            onClick={handleDeleteClick}
-          >
-            <X />
-          </Button>
+        <div className="flex items-center gap-4">
+          {/* Date Icon */}
+          <div className="flex-shrink-0">
+            <DateIcon date={new Date(date)} />
+          </div>
+
+          {/* Transaction Details */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 truncate">{name}</h3>
+                <p className="text-sm text-gray-600 mt-1">{category?.name || 'Uncategorized'}</p>
+              </div>
+
+              {/* Amount */}
+              <div className="flex-shrink-0 ml-4">
+                <p
+                  className={`text-lg font-semibold ${
+                    category?.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'
+                  }`}
+                >
+                  {formatCurrency(Math.abs(amount))}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Delete Button */}
+          <div className="flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors"
+              aria-label="Delete transaction"
+              onClick={handleDeleteClick}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </Card>
     </li>

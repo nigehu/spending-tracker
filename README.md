@@ -89,10 +89,15 @@ Example with vitest? https://www.prisma.io/blog/testing-series-1-8eRB5p0Y8o
   - [ ] Category submission
   - [ ] Category editing
   - [ ] Category submission
-- [ ] Improve UI
-  - [ ] Fix the transaction item layout
-  - [ ] Add a more aesthetic way to add a transaction
-  - [ ] Add a more aesthetic way to add a category
+- [x] Improve UI
+  - [x] Fix the transaction item layout
+  - [x] Add a more aesthetic way to add a transaction
+  - [x] Add a more aesthetic way to add a category
+- [x] Budget page (set budget for the month)
+- [ ] Import page for CSVs
+- [ ] Add a better guided UX for first time
+  - [ ] Add a category from transaction form
+  - [ ] Guide user towards transactions
 - [ ] Add docker file
-- [ ] Budget page (set budget for the month)
 - [ ] Insights page (what can we see based on purchase)
+- [ ] Labels for transactions (ie: for a trip, you can calculate how much money you spent)

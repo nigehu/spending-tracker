@@ -51,9 +51,10 @@ model BudgetGroup {
 model BudgetCategory {
   budgetCategoryId  Int    @id @default(autoincrement())
   budgetId          Int
-  budgetGroup       Budget @relation(fields: [budgetId], references: [budgetId])
+  budgetGroup       Budget @relation(fields: [budgetId], references: [budgetId], onDelete: Cascade)
   categoryId        Int
   category          Category            @relation(fields: [categoryId], references: [categoryId])
+  amount            Float
 }
 
 
