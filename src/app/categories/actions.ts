@@ -6,18 +6,19 @@ import { revalidatePath } from 'next/cache';
 
 export async function addNewCategory({ name, transactionType, description }: FormSchema) {
   try {
-    await prisma.category.create({
+    const newCategory = await prisma.category.create({
       data: {
         name,
         type: transactionType,
         description: description ?? '',
       },
     });
+    revalidatePath('/categories');
+    return newCategory;
   } catch (error) {
-    console.error('Failed to update:', error);
-    throw new Error('Database update failed');
+    console.error('Failed to create:', error);
+    throw new Error('Database create failed');
   }
-  revalidatePath('/categories');
 }
 
 export async function updateCategory(

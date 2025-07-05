@@ -37,7 +37,7 @@ export default function RootLayout({
             <div className="h-[calc(100vh_-_37px)] bg-gray-100 overflow-y-auto">{children}</div>
           </main>
         </SidebarProvider>
-        <Toaster />
+        <Toaster position="bottom-left" />
       </body>
     </html>
   );

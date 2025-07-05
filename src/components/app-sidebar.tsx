@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/src/components/ui/sidebar';
-import { Home, CircleDollarSign, SquareLibrary } from 'lucide-react';
+import { Home, CircleDollarSign, SquareLibrary, Upload } from 'lucide-react';
 import Link from 'next/link';
 
 export function AppSidebar() {
@@ -50,6 +50,14 @@ export function AppSidebar() {
                   <Link href="/transactions">
                     <SquareLibrary />
                     <span>Transactions</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/import">
+                    <Upload />
+                    <span>Import CSV</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
