@@ -1,10 +1,10 @@
 import { isDate } from 'date-fns';
-import { AlertCircle, ArrowRight, CheckCircle } from 'lucide-react';
-import { FC, useState } from 'react';
-import { Button } from '../ui/button';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import { FC, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { CSVData, HeaderMapping } from './ImportWalkthrough';
 import ImportHeaderDropdown from './ImportHeaderDropdown';
+import ImportNavigation from './ImportNavigation';
 import { getCleanAmount } from './import.utils';
 
 interface ImportHeadersFormProps {
@@ -14,14 +14,66 @@ interface ImportHeadersFormProps {
 }
 
 const ImportHeadersForm: FC<ImportHeadersFormProps> = ({ csvData, onMappingComplete, onBack }) => {
-  const [mapping, setMapping] = useState<HeaderMapping>({
-    category: '',
-    amount: '',
-    date: '',
-    name: '',
-  });
+  // Auto-match headers based on common field names
+  const autoMatchHeaders = () => {
+    const autoMapping: HeaderMapping = {
+      category: '',
+      amount: '',
+      date: '',
+      name: '',
+    };
+
+    csvData.headers.forEach((header) => {
+      const headerLower = header.toLowerCase().trim();
+
+      // Try exact matches first
+      if (headerLower === 'category' || headerLower === 'categories') {
+        autoMapping.category = header;
+      } else if (headerLower === 'amount' || headerLower === 'value' || headerLower === 'sum') {
+        autoMapping.amount = header;
+      } else if (headerLower === 'date' || headerLower === 'dates') {
+        autoMapping.date = header;
+      } else if (
+        headerLower === 'name' ||
+        headerLower === 'description' ||
+        headerLower === 'desc' ||
+        headerLower === 'title'
+      ) {
+        autoMapping.name = header;
+      }
+      // Try partial matches
+      else if (headerLower.includes('category') || headerLower.includes('cat')) {
+        autoMapping.category = header;
+      } else if (
+        headerLower.includes('amount') ||
+        headerLower.includes('price') ||
+        headerLower.includes('cost') ||
+        headerLower.includes('total')
+      ) {
+        autoMapping.amount = header;
+      } else if (headerLower.includes('date') || headerLower.includes('time')) {
+        autoMapping.date = header;
+      } else if (
+        headerLower.includes('name') ||
+        headerLower.includes('description') ||
+        headerLower.includes('note') ||
+        headerLower.includes('memo')
+      ) {
+        autoMapping.name = header;
+      }
+    });
+
+    return autoMapping;
+  };
+
+  const [mapping, setMapping] = useState<HeaderMapping>(() => autoMatchHeaders());
 
   const [isValid, setIsValid] = useState(false);
+
+  // Validate mapping whenever it changes
+  useEffect(() => {
+    validateMapping(mapping);
+  }, [mapping]);
 
   const validateCategoryColumnMapping = (headerIndex: number) => {
     return csvData.rows.every((row) => typeof row[headerIndex] === 'string');
@@ -154,20 +206,13 @@ const ImportHeadersForm: FC<ImportHeadersFormProps> = ({ csvData, onMappingCompl
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4">
-            <Button variant="outline" onClick={onBack}>
-              Back to Data Preview
-            </Button>
-
-            <Button
-              onClick={handleContinue}
-              disabled={!isValid}
-              className="flex items-center gap-2"
-            >
-              Continue to Import
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <ImportNavigation
+            onBack={onBack}
+            onForward={handleContinue}
+            backLabel="Back to Data Preview"
+            forwardLabel="Continue to Import"
+            isForwardDisabled={!isValid}
+          />
         </div>
       </CardContent>
     </Card>

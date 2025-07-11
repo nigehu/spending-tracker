@@ -1,8 +1,26 @@
-import { BudgetForm } from '@/src/components/budgets/budget-form';
-import { CreateBudgetButton } from '@/src/components/budgets/create-budget-button';
-import { CopyPreviousMonthButton } from '@/src/components/budgets/copy-previous-month-button';
-import dayjs from 'dayjs';
 import prisma from '@/lib/prisma';
+import BudgetCategories from '@/src/components/budgets/BudgetCategories';
+import BudgetMonthSelector from '@/src/components/budgets/BudgetMonthSelector';
+import { CopyPreviousMonthButton } from '@/src/components/budgets/copy-previous-month-button';
+import { CreateBudgetButton } from '@/src/components/budgets/create-budget-button';
+import { Budget, BudgetCategory, BudgetGroup, Category } from '@prisma/client';
+import dayjs from 'dayjs';
+
+export interface PreviousBudgetResponse extends Budget {
+  budgetCategories: BudgetCategory[];
+}
+
+export interface BudgetResponse extends Budget {
+  budgetCategories: (BudgetCategory & {
+    category: Category;
+  })[];
+  budgetGroup: BudgetGroup;
+}
+
+export interface EnhancedBudgetCategory extends Category {
+  amount: number;
+  transactionTotal: number;
+}
 
 export default async function Budgets({
   params,
@@ -22,7 +40,7 @@ export default async function Budgets({
   const previousEndDate = previousMonth.endOf('month').toDate();
 
   // Fetch budget for the current month
-  const budget = await prisma.budget.findFirst({
+  const budget: BudgetResponse | null = await prisma.budget.findFirst({
     where: {
       startDate: {
         lte: endDate,
@@ -42,7 +60,7 @@ export default async function Budgets({
   });
 
   // Check if previous month's budget exists
-  const previousBudget = await prisma.budget.findFirst({
+  const previousBudget: PreviousBudgetResponse | null = await prisma.budget.findFirst({
     where: {
       startDate: {
         lte: previousEndDate,
@@ -57,15 +75,14 @@ export default async function Budgets({
   });
 
   // Fetch all categories for the add budget category dropdown
-  const allCategories = await prisma.category.findMany({
+  const allCategories: Category[] = await prisma.category.findMany({
     orderBy: {
       name: 'asc',
     },
   });
 
   // Fetch transaction totals for each category within the budget time range
-  let categoryTransactionTotals: Record<number, number> = {};
-
+  let budgetCategories: EnhancedBudgetCategory[] = [];
   if (budget) {
     const transactions = await prisma.transaction.findMany({
       where: {
@@ -81,30 +98,40 @@ export default async function Budgets({
     });
 
     // Calculate totals for each category
-    categoryTransactionTotals = transactions.reduce(
+    const categoryTransactionTotals = transactions.reduce(
       (acc, transaction) => {
         acc[transaction.categoryId] = (acc[transaction.categoryId] || 0) + transaction.amount;
         return acc;
       },
       {} as Record<number, number>,
     );
+
+    budgetCategories = budget.budgetCategories
+      .map((budgetCategory) => ({
+        ...budgetCategory.category,
+        amount: budgetCategory.amount,
+        transactionTotal: categoryTransactionTotals[budgetCategory.categoryId] || 0,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log(budgetCategories);
   }
 
   return (
     <div className="flex flex-col md:flex-row">
       <div className="p-6 w-full">
+        <BudgetMonthSelector date={date} />
         {budget ? (
-          <BudgetForm
-            date={date}
+          <BudgetCategories
             budget={budget}
             allCategories={allCategories}
-            categoryTransactionTotals={categoryTransactionTotals}
             hasPreviousMonthBudget={!!previousBudget}
             canCopyFromPrevious={!!previousBudget && budget.budgetCategories.length === 0}
+            budgetCategories={budgetCategories}
+            date={date}
           />
         ) : (
           <div className="space-y-6">
-            <BudgetForm date={date} />
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
               <div className="flex">
                 <div className="flex-shrink-0">

@@ -7,10 +7,12 @@ export const formSchema = z.object({
   date: z.date({
     required_error: 'Please select a date',
   }),
-  amount: z.coerce.number({
-    required_error: 'Amount is required',
-    invalid_type_error: 'Amount must be a number',
-  }),
+  amount: z.coerce
+    .number({
+      required_error: 'Amount is required',
+      invalid_type_error: 'Amount must be a number',
+    })
+    .optional(),
   category: z.coerce.number(),
 });
 

@@ -5,12 +5,14 @@ import { StructuredImportData } from './ImportWalkthrough';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { bulkImportTransactions } from '@/src/app/actions';
+import { formatCurrency } from '@/src/lib/utils';
 
 interface ImportReviewProps {
   structuredData: StructuredImportData[];
+  onImportComplete?: () => void;
 }
 
-const ImportReview: FC<ImportReviewProps> = ({ structuredData }) => {
+const ImportReview: FC<ImportReviewProps> = ({ structuredData, onImportComplete }) => {
   const [isImporting, setIsImporting] = useState(false);
 
   // Calculate summary statistics
@@ -45,7 +47,11 @@ const ImportReview: FC<ImportReviewProps> = ({ structuredData }) => {
       const result = await bulkImportTransactions(transactionsToImport);
 
       toast.success(`Successfully imported ${result.importedCount} transactions!`);
-      // TODO: Navigate to transactions page or show success state
+
+      // Call the onImportComplete callback to reset the flow
+      if (onImportComplete) {
+        onImportComplete();
+      }
     } catch (error) {
       console.error('Import failed:', error);
       toast.error(
@@ -54,13 +60,6 @@ const ImportReview: FC<ImportReviewProps> = ({ structuredData }) => {
     } finally {
       setIsImporting(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
   };
 
   const formatDate = (date: Date) => {

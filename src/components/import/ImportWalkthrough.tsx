@@ -1,10 +1,7 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { Button } from '@/src/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card';
-import { Input } from '@/src/components/ui/input';
-import { Upload, FileText, X, ArrowRight } from 'lucide-react';
+import { Upload, FileText, ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import ImportTable from '@/src/components/import/ImportTable';
 import ImportHeadersForm from '@/src/components/import/ImportHeadersForm';
@@ -12,6 +9,8 @@ import { Category } from '@prisma/client';
 import ImportCategorization from '@/src/components/import/ImportCategorization';
 import ImportCleanup from '@/src/components/import/ImportCleanup';
 import ImportReview from '@/src/components/import/ImportReview';
+import ImportStepper, { Step } from '@/src/components/import/ImportStepper';
+import ImportUpload from '@/src/components/import/ImportUpload';
 
 export interface CSVData {
   headers: string[];
@@ -50,6 +49,16 @@ const ImportWalkthrough: FC<{ categories: Category[] }> = ({ categories }) => {
   const [headerMapping, setHeaderMapping] = useState<HeaderMapping | null>(null);
   const [categorizedData, setCategorizedData] = useState<CategorizedImportData[]>([]);
   const [structuredData, setStructuredData] = useState<StructuredImportData[]>([]);
+
+  // Define the steps for the stepper
+  const steps: Step[] = [
+    { id: 'upload', label: 'Upload', icon: Upload },
+    { id: 'preview', label: 'Preview', icon: FileText },
+    { id: 'mapping', label: 'Headers', icon: ArrowRight },
+    { id: 'categorization', label: 'Categorize', icon: ArrowRight },
+    { id: 'cleanup', label: 'Cleanup', icon: ArrowRight },
+    { id: 'review', label: 'Review', icon: Check },
+  ];
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -211,6 +220,24 @@ const ImportWalkthrough: FC<{ categories: Category[] }> = ({ categories }) => {
     setCurrentStep('review');
   };
 
+  const handleImportComplete = () => {
+    // Reset all state back to initial values
+    setCsvData(null);
+    setFileName('');
+    setCurrentStep('upload');
+    setHeaderMapping(null);
+    setCategorizedData([]);
+    setStructuredData([]);
+
+    // Reset file input
+    const fileInput = document.getElementById('csv-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+
+    toast.success('Import completed successfully! Ready for next import.');
+  };
+
   const handleBackToCategorization = () => {
     setCurrentStep('categorization');
   };
@@ -218,90 +245,40 @@ const ImportWalkthrough: FC<{ categories: Category[] }> = ({ categories }) => {
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Import CSV Data</h1>
-        <p className="text-gray-600 mt-2">
-          Upload a CSV file to view and analyze your data in a table format.
-        </p>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Import CSV Data</h1>
+          <p className="text-gray-600 mt-2">
+            Upload a CSV file to view and analyze your data in a table format.
+          </p>
+        </div>
       </div>
 
+      {/* Stepper */}
+      <ImportStepper currentStep={currentStep} steps={steps} />
+
       <div className="grid gap-6">
-        {/* Upload Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Upload CSV File
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Input
-                  id="csv-upload"
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                  disabled={isLoading}
-                  className="flex-1"
-                />
-                {csvData && (
-                  <Button variant="outline" onClick={clearData} className="flex items-center gap-2">
-                    <X className="h-4 w-4" />
-                    Clear
-                  </Button>
-                )}
-              </div>
-
-              {fileName && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md">
-                  <FileText className="h-4 w-4" />
-                  <span>{fileName}</span>
-                  {isLoading && <span className="text-blue-600">(Processing...)</span>}
-                </div>
-              )}
-              {currentStep === 'upload' && (
-                <div className="text-sm text-gray-500">
-                  <p>• Supported format: CSV files only</p>
-                  <p>• Maximum file size: 5MB</p>
-                  <p>• First row should contain column headers</p>
-                  <p>• Click on cells to edit, use buttons to add/delete rows and columns</p>
-                  <p>Example CSV file:</p>
-                  <pre className="bg-gray-100 p-2 rounded text-xs">
-                    {`category,amount,date,name
-Grocery,100,2021-01-01,Supermarket
-Transport,50,2021-01-02,Bus
-Entertainment,15,2021-01-03,Movie
-`}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
+        {currentStep === 'upload' && (
+          <ImportUpload
+            csvData={csvData}
+            fileName={fileName}
+            isLoading={isLoading}
+            currentStep={currentStep}
+            onFileUpload={handleFileUpload}
+            onClearData={clearData}
+          />
+        )}
         {csvData && currentStep === 'preview' && (
-          <>
-            <ImportTable
-              csvData={csvData}
-              fileName={fileName}
-              isLoading={isLoading}
-              onSaveCellEdit={saveCellEdit}
-              onDeleteRow={deleteRow}
-            />
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() => setCurrentStep('mapping')}
-                    className="flex items-center gap-2"
-                  >
-                    Map Headers
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </>
+          <ImportTable
+            csvData={csvData}
+            fileName={fileName}
+            isLoading={isLoading}
+            onSaveCellEdit={saveCellEdit}
+            onDeleteRow={deleteRow}
+            onBack={() => setCurrentStep('upload')}
+            onForward={() => setCurrentStep('mapping')}
+            backLabel="Back to Upload"
+            forwardLabel="Map Headers"
+          />
         )}
 
         {csvData && currentStep === 'mapping' && (
@@ -318,6 +295,7 @@ Entertainment,15,2021-01-03,Movie
             headerMapping={headerMapping}
             categories={categories}
             onCategorizationComplete={handleCategorizationComplete}
+            onBack={() => setCurrentStep('mapping')}
           />
         )}
 
@@ -326,11 +304,12 @@ Entertainment,15,2021-01-03,Movie
             categorizedData={categorizedData}
             onCleanupComplete={handleCleanupComplete}
             onBack={handleBackToCategorization}
+            csvFileName={fileName}
           />
         )}
 
         {currentStep === 'review' && structuredData.length > 0 && (
-          <ImportReview structuredData={structuredData} />
+          <ImportReview structuredData={structuredData} onImportComplete={handleImportComplete} />
         )}
       </div>
     </div>

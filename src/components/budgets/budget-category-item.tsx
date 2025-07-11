@@ -6,22 +6,20 @@ import { Pencil } from 'lucide-react';
 import { updateBudgetCategory } from '@/src/app/[year]/[month]/actions';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import type { BudgetCategory, Category } from '@prisma/client';
+import type { Category } from '@prisma/client';
 import { BudgetCategoryEditForm } from './budget-category-edit-form';
+import { formatCurrency } from '@/src/lib/utils';
+import { EnhancedBudgetCategory } from '@/src/app/[year]/[month]/page';
 
 interface BudgetCategoryItemProps {
-  budgetCategory: BudgetCategory & {
-    category: Category;
-  };
+  budgetCategory: EnhancedBudgetCategory;
   theme: 'credit' | 'debit';
-  transactionTotal: number;
   availableCategories: Category[];
 }
 
 export function BudgetCategoryItem({
   budgetCategory,
   theme,
-  transactionTotal,
   availableCategories,
 }: BudgetCategoryItemProps) {
   const [amount, setAmount] = useState(budgetCategory.amount.toString());
@@ -32,16 +30,6 @@ export function BudgetCategoryItem({
   const [showEditForm, setShowEditForm] = useState(false);
   const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Currency formatting function
-  function formatCurrency(value: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  }
 
   // Parse currency string to number
   function parseCurrency(value: string): number {
@@ -68,7 +56,7 @@ export function BudgetCategoryItem({
 
       try {
         await updateBudgetCategory({
-          budgetCategoryId: budgetCategory.budgetCategoryId,
+          budgetCategoryId: budgetCategory.categoryId,
           amount: amountValue,
         });
         router.refresh();
@@ -131,7 +119,10 @@ export function BudgetCategoryItem({
     },
   };
 
-  const budgetDifference = budgetCategory.amount - transactionTotal;
+  const budgetDifference =
+    theme === 'credit'
+      ? budgetCategory.transactionTotal - budgetCategory.amount
+      : budgetCategory.amount - budgetCategory.transactionTotal;
 
   if (showEditForm) {
     return (
@@ -151,18 +142,18 @@ export function BudgetCategoryItem({
     >
       <div className="flex-1">
         <div className="flex gap-2 justify-between">
-          <p className="font-medium text-gray-900">{budgetCategory.category.name}</p>
+          <p className="font-medium text-gray-900">{budgetCategory.name}</p>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowEditForm(true)}
             className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100"
-            aria-label={`Edit category ${budgetCategory.category.name}`}
+            aria-label={`Edit category ${budgetCategory.name}`}
           >
             <Pencil className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-sm text-gray-600">{budgetCategory.category.description}</p>
+        <p className="text-sm text-gray-600">{budgetCategory.description}</p>
         {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
       </div>
       <div className="flex flex-col gap-2">
@@ -181,10 +172,14 @@ export function BudgetCategoryItem({
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-gray-700">Total</label>
-        <p className={`w-24 h-9 leading-9 font-semibold`}>{formatCurrency(transactionTotal)}</p>
+        <p className={`w-24 h-9 leading-9 font-semibold`}>
+          {formatCurrency(budgetCategory.transactionTotal)}
+        </p>
       </div>
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">Remaining</label>
+        <label className="text-sm font-medium text-gray-700">
+          {theme === 'credit' ? 'Over' : 'Remaining'}
+        </label>
         <p
           className={`w-24 h-9 leading-9 text-${budgetDifference >= 0 ? 'green' : 'red'}-700 font-semibold`}
         >

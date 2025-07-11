@@ -1,11 +1,8 @@
 'use client';
 
 import { Button } from '@/src/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
-import React from 'react';
-import DateIcon from '../date-icon';
+import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/src/components/ui/input';
-
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/src/components/ui/form';
 import { formSchema, FormSchema } from '@/src/lib/transaction.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,8 +19,11 @@ import {
   SelectValue,
 } from '@/src/components/ui/select';
 import { updateTransaction } from '@/src/app/actions';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import { cn, formatCurrency } from '@/src/lib/utils';
 
-interface TransactionItemProps {
+interface TransactionEditProps {
   id: number;
   name: string;
   amount: number;
@@ -33,7 +33,7 @@ interface TransactionItemProps {
   handleClose: () => void;
 }
 
-const TransactionEdit: React.FC<TransactionItemProps> = ({
+const TransactionEdit: React.FC<TransactionEditProps> = ({
   id,
   name,
   amount,
@@ -42,7 +42,10 @@ const TransactionEdit: React.FC<TransactionItemProps> = ({
   categories,
   handleClose,
 }) => {
-  const [calendarOpen, setCalendarOpen] = React.useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [displayAmount, setDisplayAmount] = useState(amount.toString());
+  const [isFocused, setIsFocused] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -53,6 +56,44 @@ const TransactionEdit: React.FC<TransactionItemProps> = ({
       category: categoryId,
     },
   });
+
+  // Focus name input on mount
+  useEffect(() => {
+    nameInputRef.current?.focus();
+  }, []);
+
+  // Parse currency string to number
+  function parseCurrency(value: string): number {
+    const cleanValue = value.replace(/[$,]/g, '');
+    return parseFloat(cleanValue) || 0;
+  }
+
+  // Handle amount input change
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAmount = e.target.value;
+    setDisplayAmount(newAmount);
+
+    const numericValue = parseCurrency(newAmount);
+    if (!isNaN(numericValue)) {
+      form.setValue('amount', numericValue);
+    }
+  };
+
+  // Handle focus - show raw value
+  const handleFocus = () => {
+    setIsFocused(true);
+    setDisplayAmount(amount.toString());
+  };
+
+  // Handle blur - format as currency
+  const handleBlur = () => {
+    setIsFocused(false);
+    const numericValue = parseCurrency(displayAmount);
+    if (!isNaN(numericValue)) {
+      setDisplayAmount(formatCurrency(numericValue));
+      form.setValue('amount', numericValue);
+    }
+  };
 
   function handleEditSubmit(values: FormSchema) {
     updateTransaction(id, values);
@@ -70,52 +111,99 @@ const TransactionEdit: React.FC<TransactionItemProps> = ({
     }
   };
 
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!(e.target instanceof HTMLButtonElement)) {
-      console.log(true);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      handleCancelClick();
     }
   };
 
   return (
-    <li>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleEditSubmit)} className="space-y-8">
-          <Card className="flex flex-row justify-between py-0 gap-0" onClick={handleCardClick}>
-            <div className="w-8 bg-gradient-to-r from-red-500 to-white-500 rounded-l-xl">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a purchase category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.categoryId} value={String(category.categoryId)}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="my-6 mx-6 flex flex-col justify-center">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleEditSubmit)} onKeyDown={handleKeyDown}>
+        <div className="flex items-center gap-2">
+          {/* Category */}
+          <div className="flex-1">
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                    <FormControl>
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.categoryId} value={String(category.categoryId)}>
+                          <div className="flex items-center gap-2">
+                            <span>{category.name}</span>
+                            <span
+                              className={`text-xs px-1 py-0.5 rounded ${
+                                category.type === 'CREDIT'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {category.type}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Amount */}
+          <div className="flex-1">
+            <FormField
+              control={form.control}
+              name="amount"
+              render={() => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="$0.00"
+                      value={
+                        isFocused ? displayAmount : formatCurrency(parseFloat(displayAmount) || 0)
+                      }
+                      onChange={handleAmountChange}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                      className="h-8 text-sm font-mono"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Date */}
+          <div className="flex-1">
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
                   <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <Button variant="ghost" className="h-20 cursor-pointer" type="button">
-                          <DateIcon date={new Date(field.value)} />
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            'h-8 w-full justify-start text-left font-normal text-sm',
+                            !field.value && 'text-muted-foreground',
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {field.value ? format(field.value, 'MMM dd') : <span>Pick date</span>}
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -129,52 +217,52 @@ const TransactionEdit: React.FC<TransactionItemProps> = ({
                       />
                     </PopoverContent>
                   </Popover>
-                )}
-              />
-            </div>
-            <div className="flex-1 flex flex-col justify-center my-6">
-              <CardHeader>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <CardTitle>{<Input placeholder="Name of the purchase" {...field} />}</CardTitle>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="amount"
-                  render={({ field }) => (
-                    <CardDescription>
-                      {<Input placeholder="Amount" className="w-50" {...field} />}
-                    </CardDescription>
-                  )}
-                />
-              </CardHeader>
-            </div>
-            <div className="pr-6 flex flex-col justify-center m-6">
-              <Button
-                size="icon"
-                className="cursor-pointer px-8 mb-2"
-                aria-label="Save transaction"
-                type="submit"
-              >
-                Save
-              </Button>
-              <Button
-                variant="secondary"
-                size="icon"
-                className="cursor-pointer px-8"
-                aria-label="Save transaction"
-                onClick={handleCancelClick}
-              >
-                Cancel
-              </Button>
-            </div>
-          </Card>
-        </form>
-      </Form>
-    </li>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Name */}
+          <div className="flex-1">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder="Transaction name"
+                      {...field}
+                      ref={nameInputRef}
+                      className="h-8 text-sm"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-1">
+            <Button type="submit" size="sm" className="h-8 w-8 p-0" aria-label="Save transaction">
+              <Check className="h-3 w-3" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={handleCancelClick}
+              aria-label="Cancel edit"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </form>
+    </Form>
   );
 };
 

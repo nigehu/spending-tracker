@@ -27,12 +27,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/src/components/ui/alert-dialog';
-import type { BudgetCategory, Category } from '@prisma/client';
+import type { Category } from '@prisma/client';
+import { EnhancedBudgetCategory } from '@/src/app/[year]/[month]/page';
 
 interface BudgetCategoryEditFormProps {
-  budgetCategory: BudgetCategory & {
-    category: Category;
-  };
+  budgetCategory: EnhancedBudgetCategory;
   availableCategories: Category[];
   onClose: () => void;
 }
@@ -63,7 +62,7 @@ export function BudgetCategoryEditForm({
 
     try {
       await updateBudgetCategoryCategory({
-        budgetCategoryId: budgetCategory.budgetCategoryId,
+        budgetCategoryId: budgetCategory.categoryId,
         categoryId: parseInt(newCategoryId),
       });
       setSelectedCategoryId(newCategoryId);
@@ -82,7 +81,7 @@ export function BudgetCategoryEditForm({
 
     try {
       await deleteBudgetCategory({
-        budgetCategoryId: budgetCategory.budgetCategoryId,
+        budgetCategoryId: budgetCategory.categoryId,
       });
       onClose();
       router.refresh();
@@ -103,7 +102,7 @@ export function BudgetCategoryEditForm({
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Current Category</label>
           <p className="text-sm text-gray-600 p-2 bg-gray-50 rounded border">
-            {budgetCategory.category.name}
+            {budgetCategory.name}
           </p>
         </div>
 
@@ -166,8 +165,8 @@ export function BudgetCategoryEditForm({
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Budget Category</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to remove &ldquo;{budgetCategory.category.name}&rdquo; from
-                this budget? This action cannot be undone.
+                Are you sure you want to remove &ldquo;{budgetCategory.name}&rdquo; from this
+                budget? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

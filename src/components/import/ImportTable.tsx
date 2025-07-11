@@ -3,6 +3,7 @@ import { FC, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
+import ImportNavigation from './ImportNavigation';
 
 interface CSVData {
   headers: string[];
@@ -16,6 +17,12 @@ interface ImportTableProps {
   previewMode?: boolean;
   onSaveCellEdit: (row: number, col: number, value: string) => void;
   onDeleteRow: (row: number) => void;
+  onBack?: () => void;
+  onForward?: () => void;
+  backLabel?: string;
+  forwardLabel?: string;
+  isForwardDisabled?: boolean;
+  isForwardLoading?: boolean;
 }
 
 const ImportTable: FC<ImportTableProps> = ({
@@ -23,6 +30,12 @@ const ImportTable: FC<ImportTableProps> = ({
   previewMode = true,
   onSaveCellEdit,
   onDeleteRow,
+  onBack,
+  onForward,
+  backLabel,
+  forwardLabel,
+  isForwardDisabled,
+  isForwardLoading,
 }) => {
   const [editingCell, setEditingCell] = useState<{ row: number; col: number } | null>(null);
   const [editValue, setEditValue] = useState<string>('');
@@ -59,36 +72,27 @@ const ImportTable: FC<ImportTableProps> = ({
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
+          <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50">
-                <th className="border border-gray-300 px-2 py-2 text-center font-medium text-gray-700 w-12">
-                  #
-                </th>
+                <th className="px-2 py-2 text-center font-medium text-gray-700 w-12">#</th>
                 {csvData.headers.map((header, index) => (
                   <th
                     key={index}
-                    className="border border-gray-300 px-4 py-2 text-left font-medium text-gray-700 relative group"
+                    className="px-4 py-2 text-left font-medium text-gray-700 relative group"
                   >
                     <p className="flex items-center justify-between">{header}</p>
                   </th>
                 ))}
-                <th className="border border-gray-300 px-2 py-2 text-center font-medium text-gray-700 w-12">
-                  Actions
-                </th>
+                <th className="px-2 py-2 text-center font-medium text-gray-700 w-12">Actions</th>
               </tr>
             </thead>
             <tbody>
               {csvData.rows.slice(0, limit).map((row, rowIndex) => (
                 <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="border border-gray-300 px-2 py-2 text-center text-sm text-gray-500">
-                    {rowIndex + 1}
-                  </td>
+                  <td className="px-2 py-2 text-center text-sm text-gray-500">{rowIndex + 1}</td>
                   {row.map((cell, cellIndex) => (
-                    <td
-                      key={cellIndex}
-                      className="border border-gray-300 px-4 py-2 text-sm text-gray-900 relative group"
-                    >
+                    <td key={cellIndex} className="px-4 py-2 text-sm text-gray-900 relative group">
                       {editingCell?.row === rowIndex && editingCell?.col === cellIndex ? (
                         <div className="flex items-center gap-2">
                           <Input
@@ -138,7 +142,7 @@ const ImportTable: FC<ImportTableProps> = ({
                       )}
                     </td>
                   ))}
-                  <td className="border border-gray-300 px-2 py-2 text-center">
+                  <td className="px-2 py-2 text-center">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -159,6 +163,18 @@ const ImportTable: FC<ImportTableProps> = ({
             </div>
           )}
         </div>
+
+        {/* Navigation */}
+        {(onBack || onForward) && (
+          <ImportNavigation
+            onBack={onBack}
+            onForward={onForward}
+            backLabel={backLabel}
+            forwardLabel={forwardLabel}
+            isForwardDisabled={isForwardDisabled}
+            isForwardLoading={isForwardLoading}
+          />
+        )}
       </CardContent>
     </Card>
   );

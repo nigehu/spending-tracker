@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import React from 'react';
 import DateIcon from '../date-icon';
 import { Category } from '@prisma/client';
+import { formatCurrency } from '@/src/lib/utils';
 
 interface TransactionItemProps {
   id: number;
@@ -33,15 +34,6 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
 
   const handleTransactionCardClick = () => {
     handleCardClick(id);
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
   };
 
   return (

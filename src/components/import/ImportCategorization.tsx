@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { CheckCircle, Plus, ArrowRight } from 'lucide-react';
+import { CheckCircle, Plus } from 'lucide-react';
 import { Category } from '@prisma/client';
 import { CSVData, HeaderMapping, CategorizedImportData } from './ImportWalkthrough';
 import { Input } from '../ui/input';
@@ -11,12 +11,14 @@ import { Label } from '../ui/label';
 import { toast } from 'sonner';
 import { addNewCategory } from '@/src/app/categories/actions';
 import { getCleanAmount } from './import.utils';
+import ImportNavigation from './ImportNavigation';
 
 interface ImportCategorizationProps {
   csvData: CSVData;
   headerMapping: HeaderMapping;
   categories: Category[];
   onCategorizationComplete: (data: CategorizedImportData[]) => void;
+  onBack?: () => void;
 }
 
 interface CategoryMapping {
@@ -36,6 +38,7 @@ const ImportCategorization: FC<ImportCategorizationProps> = ({
   headerMapping,
   categories,
   onCategorizationComplete,
+  onBack,
 }) => {
   const [categoryMappings, setCategoryMappings] = useState<CategoryMapping>({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -53,9 +56,9 @@ const ImportCategorization: FC<ImportCategorizationProps> = ({
   }, [csvData.headers, csvData.rows, headerMapping.category]);
 
   const missingCategories = useMemo(() => {
-    return importCategories.filter(
-      (importCategory) => !categories.some((category) => category.name === importCategory),
-    );
+    return importCategories
+      .filter((importCategory) => !categories.some((category) => category.name === importCategory))
+      .sort();
   }, [categories, importCategories]);
 
   const existingCategories = useMemo(() => {
@@ -74,7 +77,7 @@ const ImportCategorization: FC<ImportCategorizationProps> = ({
         }));
       }
     });
-    return existing;
+    return existing.sort();
   }, [categories, importCategories]);
 
   const handleAddNewCategory = (csvCategory: string) => {
@@ -377,16 +380,14 @@ const ImportCategorization: FC<ImportCategorizationProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end pt-4">
-            <Button
-              onClick={handleCreateCategories}
-              disabled={!isReadyToProcess() || isProcessing}
-              className="flex items-center gap-2"
-            >
-              {isProcessing ? 'Processing...' : 'Continue to Import'}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <ImportNavigation
+            onBack={onBack}
+            onForward={handleCreateCategories}
+            backLabel="Back to Headers"
+            forwardLabel={isProcessing ? 'Processing...' : 'Continue to Import'}
+            isForwardDisabled={!isReadyToProcess() || isProcessing}
+            isForwardLoading={isProcessing}
+          />
         </div>
       </CardContent>
     </Card>
