@@ -1,10 +1,18 @@
 'use client';
 
 import { EnhancedBudgetCategory } from '@/src/app/[year]/[month]/page';
-import { formatCurrency } from '@/src/lib/utils';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/src/components/ui/table';
 import { Category } from '@prisma/client';
 import { FC } from 'react';
-import { BudgetCategoryItem } from './budget-category-item';
+import { BudgetCategoryItem } from './BudgetCategoryItem';
+import BudgetTotal from './BudgetTotal';
 
 interface BudgetCategoryListProps {
   budgetTotal: number;
@@ -22,33 +30,43 @@ const BudgetCategoryList: FC<BudgetCategoryListProps> = ({
   theme,
 }) => {
   const themeName = theme.charAt(0).toUpperCase() + theme.slice(1);
+  const budgetDifferenceTotal = budgetTotal - transactionTotal;
+  const totalsDescriptor = theme === 'debit' ? 'Expenses' : 'Income';
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-md font-medium text-gray-900">{themeName} Categories</h4>
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">Budget Total</label>
-          <p className={`w-24 h-9 leading-9 font-semibold`}>{formatCurrency(budgetTotal)}</p>
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">Transaction Total</label>
-          <p className={`w-24 h-9 leading-9 font-semibold`}>{formatCurrency(transactionTotal)}</p>
-        </div>
+    <div>
+      <div className="flex items-center justify-around mb-6">
+        <BudgetTotal title={`Projected ${totalsDescriptor}`}>{budgetTotal}</BudgetTotal>
+        <BudgetTotal title={`Actual ${totalsDescriptor}`}>{transactionTotal}</BudgetTotal>
+        <BudgetTotal title={`Remaining ${totalsDescriptor}`} color reverse={theme === 'credit'}>
+          {budgetDifferenceTotal}
+        </BudgetTotal>
       </div>
-      <div className="space-y-2">
-        {categories.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No {theme} categories added</p>
-        ) : (
-          categories.map((budgetCategory) => (
-            <BudgetCategoryItem
-              key={budgetCategory.categoryId}
-              budgetCategory={budgetCategory}
-              theme={theme}
-              availableCategories={allCategories}
-            />
-          ))
-        )}
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{themeName} Categories</TableHead>
+            <TableHead className="text-right pr-3">Budget</TableHead>
+            <TableHead className="text-right">Transactions</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {categories.length === 0 ? (
+            <TableRow>
+              <TableCell className="font-medium">No {theme} categories added</TableCell>
+            </TableRow>
+          ) : (
+            categories.map((budgetCategory) => (
+              <BudgetCategoryItem
+                key={budgetCategory.categoryId}
+                budgetCategory={budgetCategory}
+                theme={theme}
+                availableCategories={allCategories}
+              />
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 };

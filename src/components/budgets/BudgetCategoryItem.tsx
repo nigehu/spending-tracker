@@ -1,15 +1,14 @@
 'use client';
 
-import { Input } from '@/src/components/ui/input';
-import { Button } from '@/src/components/ui/button';
-import { Pencil } from 'lucide-react';
 import { updateBudgetCategory } from '@/src/app/[year]/[month]/actions';
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Category } from '@prisma/client';
-import { BudgetCategoryEditForm } from './budget-category-edit-form';
-import { formatCurrency } from '@/src/lib/utils';
 import { EnhancedBudgetCategory } from '@/src/app/[year]/[month]/page';
+import { Input } from '@/src/components/ui/input';
+import { formatCurrency } from '@/src/lib/utils';
+import type { Category } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { BudgetCategoryEditForm } from './budget-category-edit-form';
+import { TableCell, TableRow } from '@/src/components/ui/table';
 
 interface BudgetCategoryItemProps {
   budgetCategory: EnhancedBudgetCategory;
@@ -56,7 +55,7 @@ export function BudgetCategoryItem({
 
       try {
         await updateBudgetCategory({
-          budgetCategoryId: budgetCategory.categoryId,
+          budgetCategoryId: budgetCategory.budgetCategoryId,
           amount: amountValue,
         });
         router.refresh();
@@ -108,17 +107,6 @@ export function BudgetCategoryItem({
     };
   }, []);
 
-  const themeClasses = {
-    credit: {
-      container: 'bg-green-50 border border-green-200',
-      amount: 'text-green-700',
-    },
-    debit: {
-      container: 'bg-red-50 border border-red-200',
-      amount: 'text-red-700',
-    },
-  };
-
   const budgetDifference =
     theme === 'credit'
       ? budgetCategory.transactionTotal - budgetCategory.amount
@@ -137,55 +125,31 @@ export function BudgetCategoryItem({
   }
 
   return (
-    <div
-      className={`flex items-center justify-between p-3 ${themeClasses[theme].container} rounded-md gap-4 group`}
-    >
-      <div className="flex-1">
-        <div className="flex gap-2 justify-between">
-          <p className="font-medium text-gray-900">{budgetCategory.name}</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowEditForm(true)}
-            className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100"
-            aria-label={`Edit category ${budgetCategory.name}`}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+    <TableRow>
+      <TableCell className="font-medium">{budgetCategory.name}</TableCell>
+      <TableCell className="py-2 px-0">
+        <div className="flex items-end flex-col">
+          <Input
+            type="text"
+            value={isFocused ? amount : displayAmount}
+            onChange={handleAmountChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className={`w-24 text-right font-semibold ${isUpdating ? 'opacity-50' : ''}`}
+            disabled={isUpdating}
+            placeholder="$0.00"
+          />
+          {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
         </div>
-        <p className="text-sm text-gray-600">{budgetCategory.description}</p>
-        {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-      </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">Budget</label>
-        <Input
-          type="text"
-          value={isFocused ? amount : displayAmount}
-          onChange={handleAmountChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          className={`w-24 text-right font-semibold ${isUpdating ? 'opacity-50' : ''}`}
-          disabled={isUpdating}
-          placeholder="$0.00"
-        />
-        {isUpdating && <p className="text-xs text-gray-500 mt-1">Updating...</p>}
-      </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">Total</label>
-        <p className={`w-24 h-9 leading-9 font-semibold`}>
-          {formatCurrency(budgetCategory.transactionTotal)}
-        </p>
-      </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">
-          {theme === 'credit' ? 'Over' : 'Remaining'}
-        </label>
-        <p
-          className={`w-24 h-9 leading-9 text-${budgetDifference >= 0 ? 'green' : 'red'}-700 font-semibold`}
-        >
-          {formatCurrency(budgetDifference)}
-        </p>
-      </div>
-    </div>
+      </TableCell>
+      <TableCell className="text-right">
+        {formatCurrency(budgetCategory.transactionTotal)}
+      </TableCell>
+      <TableCell
+        className={`text-right text-${budgetDifference >= 0 ? 'green' : 'red'}-700 font-semibold`}
+      >
+        {formatCurrency(budgetDifference)}
+      </TableCell>
+    </TableRow>
   );
 }

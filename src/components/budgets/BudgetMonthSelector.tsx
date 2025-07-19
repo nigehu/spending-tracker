@@ -1,22 +1,30 @@
 'use client';
 
 import { Button } from '@/src/components/ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/src/components/ui/collapsible';
 import dayjs from 'dayjs';
+import { ChevronLeft, ChevronRight, ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { FC, useEffect, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import VirtualizedYearDropdown from './VirtualizedYearSelect';
 
 interface LocalProps {
-  date?: Date;
+  date: Date;
 }
 
 const BudgetMonthSelector: FC<LocalProps> = ({ date }) => {
+  const [open, setOpen] = useState(false);
   const router = useRouter();
 
   // Get current date if no date is provided
-  const currentDate = date || new Date();
-  const currentYear = dayjs(currentDate).year();
-  const currentMonth = dayjs(currentDate).month(); // 0-based month index
+  const today = dayjs();
+  const currentDate = dayjs(date) || today;
+  const currentYear = currentDate.year();
+  const currentMonth = currentDate.month(); // 0-based month index
 
   const months = [
     'January',
@@ -46,43 +54,54 @@ const BudgetMonthSelector: FC<LocalProps> = ({ date }) => {
     return yearRange;
   }, []);
 
-  // Redirect to current year/month if no date is provided
-  useEffect(() => {
-    if (!date) {
-      const year = dayjs().year();
-      const month = dayjs().month() + 1; // Convert to 1-based month
-      router.push(`/${year}/${month}`);
-    }
-  }, [date, router]);
-
   function handleMonthSelect(monthIndex: number) {
-    const year = dayjs(currentDate).year();
     const month = monthIndex + 1; // monthIndex is 0-based, but we need 1-based
-    router.push(`/${year}/${month}`);
+    router.push(`/${currentYear}/${month}`);
   }
 
   function handleYearSelect(year: number) {
-    const month = dayjs(currentDate).month() + 1; // current month (1-based)
+    const month = currentMonth + 1; // current month (1-based)
     router.push(`/${year}/${month}`);
   }
 
+  const handleBackwardMonth = () => {
+    const nextMonthIndex = currentMonth - 1;
+    handleMonthSelect(nextMonthIndex);
+  };
+
+  const handleForwardMonth = () => {
+    const nextMonthIndex = currentMonth + 1;
+    handleMonthSelect(nextMonthIndex);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header with Year Dropdown */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Budget Overview</h2>
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-gray-600">Year:</span>
+    <Collapsible open={open} onOpenChange={setOpen} className="flex flex-col gap-2 pb-2">
+      <div className="flex items-center justify-center">
+        <div className="flex items-center gap-4 py-2 px-10 bg-white border border-gray-200 rounded-sm shadow-sm">
+          <Button variant="ghost" size="icon" className="size-8" onClick={handleBackwardMonth}>
+            <ChevronLeft />
+          </Button>
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost">
+                <h2 className="text-2xl font-bold text-gray-900">{months[currentMonth]}</h2>
+                <ChevronsUpDown />
+              </Button>
+            </div>
+          </CollapsibleTrigger>
           <VirtualizedYearDropdown
             years={years}
             currentYear={currentYear}
             onYearSelect={handleYearSelect}
           />
+          <Button variant="ghost" size="icon" className="size-8" onClick={handleForwardMonth}>
+            <ChevronRight />
+          </Button>
         </div>
       </div>
-
-      {/* Month Grid */}
-      <div className="grid grid-cols-4 gap-2">
+      <CollapsibleContent
+        className={`grid grid-cols-4 gap-2 overflow-hidden ${open ? 'animate-slide-down' : 'animate-slide-up'}`}
+      >
         {months.map((month, index) => (
           <Button
             key={month}
@@ -93,8 +112,8 @@ const BudgetMonthSelector: FC<LocalProps> = ({ date }) => {
             {month}
           </Button>
         ))}
-      </div>
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 

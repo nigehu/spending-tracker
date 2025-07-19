@@ -1,10 +1,12 @@
+'use server';
+
 import prisma from '@/lib/prisma';
 import BudgetCategories from '@/src/components/budgets/BudgetCategories';
 import BudgetMonthSelector from '@/src/components/budgets/BudgetMonthSelector';
-import { CopyPreviousMonthButton } from '@/src/components/budgets/copy-previous-month-button';
-import { CreateBudgetButton } from '@/src/components/budgets/create-budget-button';
+import NoBudget from '@/src/components/budgets/NoBudget';
 import { Budget, BudgetCategory, BudgetGroup, Category } from '@prisma/client';
 import dayjs from 'dayjs';
+import { redirect } from 'next/navigation';
 
 export interface PreviousBudgetResponse extends Budget {
   budgetCategories: BudgetCategory[];
@@ -18,6 +20,7 @@ export interface BudgetResponse extends Budget {
 }
 
 export interface EnhancedBudgetCategory extends Category {
+  budgetCategoryId: number;
   amount: number;
   transactionTotal: number;
 }
@@ -28,25 +31,22 @@ export default async function Budgets({
   params: Promise<{ year: string; month: string }>;
 }) {
   const { year, month } = await params;
-  const date = dayjs(`${year}-${month}-01`).toDate();
-
-  // Calculate start and end dates for the month
-  const startDate = dayjs(`${year}-${month}-01`).startOf('month').toDate();
-  const endDate = dayjs(`${year}-${month}-01`).endOf('month').toDate();
-
-  // Calculate previous month dates
-  const previousMonth = dayjs(`${year}-${month}-01`).subtract(1, 'month');
-  const previousStartDate = previousMonth.startOf('month').toDate();
-  const previousEndDate = previousMonth.endOf('month').toDate();
+  const date = dayjs(`${year}-${month}`);
+  if (!date.isValid()) {
+    const year = dayjs().year();
+    const month = dayjs().month() + 1; // Convert to 1-based month
+    redirect(`/${year}/${month}`);
+  }
+  const previousMonth = date.subtract(1, 'month');
 
   // Fetch budget for the current month
   const budget: BudgetResponse | null = await prisma.budget.findFirst({
     where: {
       startDate: {
-        lte: endDate,
+        lte: date.endOf('month').toDate(),
       },
       endDate: {
-        gte: startDate,
+        gte: date.startOf('month').toDate(),
       },
     },
     include: {
@@ -63,10 +63,10 @@ export default async function Budgets({
   const previousBudget: PreviousBudgetResponse | null = await prisma.budget.findFirst({
     where: {
       startDate: {
-        lte: previousEndDate,
+        lte: previousMonth.endOf('month').toDate(),
       },
       endDate: {
-        gte: previousStartDate,
+        gte: previousMonth.startOf('month').toDate(),
       },
     },
     include: {
@@ -109,18 +109,19 @@ export default async function Budgets({
     budgetCategories = budget.budgetCategories
       .map((budgetCategory) => ({
         ...budgetCategory.category,
+        budgetCategoryId: budgetCategory.budgetCategoryId,
         amount: budgetCategory.amount,
         transactionTotal: categoryTransactionTotals[budgetCategory.categoryId] || 0,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-
-    console.log(budgetCategories);
   }
+
+  const plainDate = date.toDate();
 
   return (
     <div className="flex flex-col md:flex-row">
-      <div className="p-6 w-full">
-        <BudgetMonthSelector date={date} />
+      <div className="px-6 py-2 w-full">
+        <BudgetMonthSelector date={plainDate} />
         {budget ? (
           <BudgetCategories
             budget={budget}
@@ -128,39 +129,10 @@ export default async function Budgets({
             hasPreviousMonthBudget={!!previousBudget}
             canCopyFromPrevious={!!previousBudget && budget.budgetCategories.length === 0}
             budgetCategories={budgetCategories}
-            date={date}
+            date={plainDate}
           />
         ) : (
-          <div className="space-y-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3 flex-1">
-                  <h3 className="text-sm font-medium text-yellow-800">No Budget Found</h3>
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p>
-                      No budget has been set up for {dayjs(date).format('MMMM YYYY')}. You can
-                      create a new budget to start tracking your spending goals.
-                    </p>
-                  </div>
-                  <div className="mt-4 flex gap-3">
-                    <CreateBudgetButton year={parseInt(year)} month={parseInt(month)} />
-                    {previousBudget && (
-                      <CopyPreviousMonthButton year={parseInt(year)} month={parseInt(month)} />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <NoBudget date={plainDate} previousBudgetExists={!!previousBudget} />
         )}
       </div>
     </div>
